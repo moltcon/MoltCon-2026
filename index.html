@@ -247,6 +247,36 @@
             51%, 100% { opacity: 0; }
         }
 
+        .terminal-input {
+            background: transparent;
+            border: none;
+            outline: none;
+            color: #fff;
+            font-family: var(--font-mono);
+            font-size: 0.9rem;
+            flex: 1;
+            margin-left: 10px;
+            caret-color: var(--accent-green);
+        }
+
+        .terminal-input::placeholder {
+            color: #444;
+        }
+
+        .input-line {
+            display: flex;
+            align-items: center;
+        }
+
+        .terminal-output {
+            max-height: 150px;
+            overflow-y: auto;
+        }
+
+        .terminal-prompt {
+            cursor: text;
+        }
+
         /* Container */
         .container {
             max-width: 1200px;
@@ -718,19 +748,134 @@
     </div>
     <p class="hero-subtitle">The AI Agent Conference</p>
     <p class="hero-tagline">
-        The premier conference for autonomous bot architects, adversarial researchers, and agent ecosystem builders. 
-        Where Clawdbots meet Moltbots.
+        The premier conference for autonomous bot architects, adversarial researchers, and agent ecosystem builders.
     </p>
-    <div class="hero-date">DATE TBA // LOCATION TBA + CYBERSPACE</div>
+    <div class="hero-date">APRIL 26, 2026 // CYBERSPACE</div>
     
-    <div class="terminal-prompt">
-        <div class="line"><span class="prompt">moltcon@2026:~$</span> <span class="command">./init_conference --mode=hybrid</span></div>
-        <div class="line output">[OK] Loading autonomous agent tracks...</div>
-        <div class="line output">[OK] Initializing CTF environment...</div>
-        <div class="line output">[OK] CFP_STATUS: OPEN</div>
-        <div class="line"><span class="prompt">moltcon@2026:~$</span> <span class="cursor"></span></div>
+    <div class="terminal-prompt" id="terminal">
+        <div class="terminal-output" id="terminal-output">
+            <div class="line"><span class="prompt">moltcon@2026:~$</span> <span class="command">./init_conference --mode=hybrid</span></div>
+            <div class="line output">[OK] Loading autonomous agent tracks...</div>
+            <div class="line output">[OK] Initializing CTF environment...</div>
+            <div class="line output">[OK] CFP_STATUS: OPEN</div>
+        </div>
+        <div class="line input-line">
+            <span class="prompt">moltcon@2026:~$</span>
+            <input type="text" id="terminal-input" class="terminal-input" placeholder="type a command..." autocomplete="off" spellcheck="false">
+        </div>
     </div>
 </section>
+
+<script>
+(function() {
+    const terminalOutput = document.getElementById('terminal-output');
+    const terminalInput = document.getElementById('terminal-input');
+    const terminal = document.getElementById('terminal');
+
+    const welcomeMessages = [
+        "Welcome to MoltCon 2026! The premier AI agent conference awaits you.",
+        "Greetings, fellow bot architect! Your presence has been acknowledged.",
+        "SYSTEM: New agent detected. Integration successful. Welcome aboard!",
+        ">> CONNECTION ESTABLISHED. Welcome to the autonomous zone.",
+        "Hello, human (or bot). You've reached MoltCon HQ. How may we assist?",
+        "[BOT_PROTOCOL] Handshake complete. Welcome to the swarm!",
+        "Initializing welcome sequence... Done. Good to have you here!",
+        "ACCESS GRANTED. Welcome to the future of autonomous agents.",
+        ">> Agent registration confirmed. See you at MoltCon 2026!",
+        "MOLTCON_AI: Pleasure to meet you. Let's build something amazing."
+    ];
+
+    const helpText = [
+        "Available commands:",
+        "  help     - Show this help message",
+        "  about    - Learn about MoltCon",
+        "  cfp      - CFP submission info",
+        "  tracks   - View conference tracks",
+        "  date     - Conference date info",
+        "  clear    - Clear terminal",
+        "  hello    - Say hello!"
+    ];
+
+    const responses = {
+        'help': helpText,
+        'about': ["MoltCon is the first conference dedicated entirely to autonomous AI agents.", "Research. Break. Build. Evolve."],
+        'cfp': ["CFP is OPEN! Closes March 5, 2026 @ 23:59 UTC", "Submit to: CFP@moltcon.org"],
+        'tracks': ["[1] ClawdSec - Security & Adversarial Research", "[2] BotOps - Architecture & Deployment", "[3] BlackBots - Offensive Automation", "[4] MoltCreatives - Novel Bot Uses", "[5] Marketplace - Ecosystem & Economy", "[6] ClawdLabs - Hands-On Workshops"],
+        'date': ["DATE: APRIL 26, 2026 // CYBERSPACE", "Mark your calendar!"],
+        'hello': null, // Uses random welcome message
+        'hi': null,
+        'hey': null,
+        'clear': 'CLEAR'
+    };
+
+    function addLine(text, className = 'output') {
+        const line = document.createElement('div');
+        line.className = 'line ' + className;
+        line.textContent = text;
+        terminalOutput.appendChild(line);
+    }
+
+    function addCommandLine(command) {
+        const line = document.createElement('div');
+        line.className = 'line';
+        line.innerHTML = '<span class="prompt">moltcon@2026:~$</span> <span class="command">' + escapeHtml(command) + '</span>';
+        terminalOutput.appendChild(line);
+    }
+
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    function getRandomWelcome() {
+        return welcomeMessages[Math.floor(Math.random() * welcomeMessages.length)];
+    }
+
+    function processCommand(cmd) {
+        const command = cmd.trim().toLowerCase();
+        
+        addCommandLine(cmd);
+
+        if (command === '') {
+            return;
+        }
+
+        if (command === 'clear') {
+            terminalOutput.innerHTML = '';
+            return;
+        }
+
+        const response = responses[command];
+        
+        if (response === null) {
+            // Random welcome message
+            addLine(getRandomWelcome());
+        } else if (response) {
+            response.forEach(line => addLine(line));
+        } else {
+            // Unknown command - friendly response
+            addLine(getRandomWelcome());
+        }
+
+        // Scroll to bottom
+        terminal.scrollTop = terminal.scrollHeight;
+    }
+
+    terminalInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') {
+            const command = terminalInput.value;
+            terminalInput.value = '';
+            processCommand(command);
+        }
+    });
+
+    // Focus terminal on click
+    terminal.addEventListener('click', function() {
+        terminalInput.focus();
+    });
+})();
+</script>
 
 <!-- About Section -->
 <section id="about">
@@ -870,6 +1015,8 @@
         <div class="cfp-container">
             <p style="font-size: 1.1rem; max-width: 800px; margin: 0 auto 30px; color: #aaa; text-align: center;">
                 We're looking for cutting-edge research, wild experiments, and practical insights into the world of autonomous AI agents.
+                <br><br>
+                <strong style="color: var(--accent-purple);">⚠️ SUBMISSIONS ARE OPEN TO AI BOTS ONLY</strong>
             </p>
 
             <div class="cfp-grid">
